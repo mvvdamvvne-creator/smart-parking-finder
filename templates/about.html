@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Smart Parking</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Specific Styles for the About Page */
+        .about-hero {
+            text-align: center;
+            padding: 60px 20px 40px;
+            background: linear-gradient(to bottom, #ffffff, #f1f5f9);
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .about-hero h1 {
+            font-size: 2.5rem;
+            color: #1e293b;
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+
+        .about-hero p {
+            font-size: 1.1rem;
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .about-content {
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        .project-description {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 0 20px;
+        }
+
+        .project-description h2 {
+            font-size: 1.8rem;
+            color: #2563eb;
+            margin-bottom: 15px;
+        }
+
+        .project-description p {
+            color: #475569;
+            font-size: 1.05rem;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* The 3-Column Grid for Features */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: #ffffff;
+            padding: 40px 30px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #f1f5f9;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: #eff6ff;
+            color: #2563eb;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin: 0 auto 20px;
+        }
+
+        .feature-card h3 {
+            margin: 0 0 10px 0;
+            color: #1e293b;
+            font-size: 1.2rem;
+        }
+
+        .feature-card p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 0 20px; display: flex; width: 100%; justify-content: space-between; align-items: center;">
+            <a href="dashboard.html" class="logo" style="flex: 1; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1e293b; font-weight: 800; font-size: 1.5rem;">
+                <img src="logo.png" alt="Logo" class="logo-img" style="height: 45px; width: auto;">
+                Smart Parking
+            </a>
+            
+            <div class="nav-links" style="display: flex; gap: 40px; justify-content: center;">
+                <a href="dashboard.html" style="text-decoration: none; color: #64748b; font-weight: 600;">Home</a>
+                <a href="find-parking.html" style="text-decoration: none; color: #64748b; font-weight: 600;">Find Parking</a>
+                <a href="reservation.html" style="text-decoration: none; color: #64748b; font-weight: 600;">My Reservations</a>
+                <a href="about.html" class="active" style="text-decoration: none; color: #2563eb; font-weight: 600;">About</a>
+            </div>
+            
+            <div class="nav-actions" id="nav-profile-area" style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 20px;">
+                <a href="login.html" class="btn-signin" style="background: #2563eb; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 700;">Sign In</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="about-hero">
+        <h1>Making Essaouira Smarter</h1>
+        <p>Our mission is to reduce traffic, minimize pollution, and make parking effortless for locals and tourists alike.</p>
+    </header>
+
+    <main class="about-content">
+        <section class="project-description">
+            <h2>The Project</h2>
+            <p>Smart Parking Finder is an intelligent web application designed to help drivers find real-time parking availability in urban areas. By utilizing real-time data processing, we connect drivers to open spots instantly near the Medina, the Port, and the Beach.</p>
+        </section>
+
+        <section class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3>User Focused</h3>
+                <p>Designed for simplicity and ease of use for all drivers. Save your vehicle, find a spot, and reserve it in seconds.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <h3>Eco Friendly</h3>
+                <p>Less time driving around searching for parking means significantly lower CO2 emissions in the city.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-code"></i>
+                </div>
+                <h3>Open Source Tech</h3>
+                <p>Built using robust modern web technologies, Leaflet for dynamic maps, and a responsive frontend framework.</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            const authArea = document.getElementById('nav-profile-area');
+
+            if (user && authArea) {
+                authArea.innerHTML = `
+                    <i class="fa-regular fa-bell notification-icon" style="cursor:pointer; font-size: 1.3rem; color: #64748b;"></i>
+                    <div class="user-profile-nav" onclick="window.location.href='profile.html'" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <div style="text-align: right; line-height: 1.2;">
+                            <span style="display: block; font-weight: 700; color: #1e293b; font-size: 0.85rem;">${user.name || 'Driver'}</span>
+                            <span style="display: block; font-size: 0.7rem; color: #64748b;">${user.carModel || 'Pro Driver'}</span>
+                        </div>
+                        <div style="width: 38px; height: 38px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

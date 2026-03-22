@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Reservations - Smart Parking Finder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Extra style for the Empty State (when you have no booking) */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: none; /* Hidden by default */
+        }
+        .empty-icon { font-size: 4rem; color: #cbd5e1; margin-bottom: 20px; }
+        .btn-home { display: inline-block; margin-top: 20px; padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+   <nav class="navbar">
+    <div class="container nav-inner"> 
+        <a href="dashboard.html" class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" style="height: 65px; width: auto;" alt="Smart Parking Logo">
+            Smart Parking Finder
+        </a>
+
+        <div class="nav-links">
+            <a href="dashboard.html">Home</a>
+            <a href="find-parking.html">Find Parking</a>
+            <a href="reservation.html" class="active">My Reservations</a>
+            <a href="about.html">About</a>
+        </div>
+        
+      <div class="nav-actions" id="nav-profile-area">
+            </div>
+    </div>
+</nav>
+
+<div class="container" style="margin-top: 40px; margin-bottom: 60px;">
+    
+    <div class="page-header">
+        <h2>My Reservations</h2>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('upcoming')">Upcoming</button>
+            <button class="tab-btn" onclick="switchTab('history')">History</button>
+        </div>
+    </div>
+
+    <div id="upcoming" class="reservation-list">
+        
+        <div id="empty-state" class="empty-state">
+            <i class="fas fa-calendar-times empty-icon"></i>
+            <h3>No Active Reservations</h3>
+            <p style="color: #64748b;">You haven't booked any parking spots yet.</p>
+            <a href="dashboard.html" class="btn-home">Find a Spot</a>
+        </div>
+
+        <div id="ticket-container"></div>
+
+    </div>
+
+    <div id="history" class="reservation-list" style="display: none;">
+        <div class="ticket-card past">
+            <div class="ticket-left">
+                <div class="ticket-status-strip completed">Completed</div>
+                <div class="ticket-info">
+                    <h3>City Center Garage</h3>
+                    <p class="location"><i class="fas fa-map-marker-alt"></i> 789 Center Ave</p>
+                    <p class="past-date">Dec 20, 2023 • 2 hours</p>
+                    <div class="ticket-actions">
+                        <button class="btn-secondary small">Book Again</button>
+                    </div>
+                </div>
+            </div>
+            <div class="ticket-right">
+                <span class="price-display gray">$8.00</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async function() {
+        // 1. Check if the user just clicked "Reserve" from the map
+        const urlParams = new URLSearchParams(window.location.search);
+        const parkingId = urlParams.get('id');
+
+        if (parkingId) {
+            try {
+                // Fetch the live data from your database
+                const response = await fetch('/api/parkings');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Find the exact parking they clicked on
+                    const selectedParking = data.parkings.find(p => p.id == parkingId);
+                    
+                    if (selectedParking) {
+                        // Create a new booking with the REAL database data
+                        const newBooking = {
+                            spotName: selectedParking.nom,
+                            price: selectedParking.tarif + " DH",
+                            date: new Date().toLocaleDateString(),
+                            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                        };
+                        
+                        // Save it to memory so the ticket shows up
+                        localStorage.setItem('currentBooking', JSON.stringify(newBooking));
+                        
+                        // Clean the URL (remove the ?id=...) so refreshing doesn't cause bugs
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching parking data:", error);
+            }
+        }
+
+        // 2. Now load the ticket (either the one we just made, or a past one)
+        loadTicket();
+    });
+
+    // --- FUNCTION TO RENDER THE TICKET ---
+    function loadTicket() {
+        const bookingJson = localStorage.getItem('currentBooking');
+        const container = document.getElementById('ticket-container');
+        const emptyState = document.getElementById('empty-state');
+
+        if (bookingJson) {
+            const booking = JSON.parse(bookingJson);
+            
+            container.innerHTML = `
+                <div class="ticket-card active-now">
+                    <div class="ticket-left">
+                        <div class="ticket-status-strip pulsing">Active Now</div>
+                        <div class="ticket-info">
+                            <h3>${booking.spotName}</h3>
+                            <p class="location"><i class="fas fa-map-marker-alt"></i> ${booking.date} • Smart Zone A</p>
+                            
+                            <div class="time-grid">
+                                <div class="time-block">
+                                    <span class="label">Entry</span>
+                                    <span class="value">${booking.time}</span>
+                                </div>
+                                <div class="arrow"><i class="fas fa-arrow-right"></i></div>
+                                <div class="time-block">
+                                    <span class="label">Exit (Est.)</span>
+                                    <span class="value"> + 2 Hours</span>
+                                </div>
+                            </div>
+
+                            <div class="ticket-actions">
+                                <button class="btn-secondary small" onclick="alert('Navigating...')">Directions</button>
+                                <button class="btn-danger small" onclick="cancelBooking()">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ticket-right">
+                        <div class="qr-placeholder">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${booking.spotName}" style="width:80px; opacity:0.8">
+                        </div>
+                        <span class="ticket-id">ID: #${Math.floor(100000 + Math.random() * 900000)}</span>
+                        <span class="price-display">${booking.price}</span>
+                    </div>
+                </div>
+            `;
+            
+            emptyState.style.display = 'none';
+        } else {
+            container.innerHTML = ''; 
+            emptyState.style.display = 'block';
+        }
+    }
+
+    // --- CANCEL FUNCTION ---
+    function cancelBooking() {
+        if(confirm("Are you sure you want to cancel this reservation?")) {
+            localStorage.removeItem('currentBooking'); 
+            window.location.reload(); 
+        }
+    }
+
+    // --- TAB SWITCHER ---
+    function switchTab(tabName) {
+        document.getElementById('upcoming').style.display = 'none';
+        document.getElementById('history').style.display = 'none';
+        
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tabName).style.display = 'block';
+        
+        if(tabName === 'upcoming') document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        else document.querySelectorAll('.tab-btn')[1].classList.add('active');
+    }
+    // --- CHARGEMENT DU PROFIL UTILISATEUR ---
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+        const authArea = document.getElementById('nav-profile-area');
+
+        if (user && authArea) {
+            authArea.innerHTML = `
+                <i class="fa-regular fa-bell notification-icon"></i>
+                <div class="user-nav-wrapper" onclick="window.location.href='profile.html'" style="cursor:pointer; display:flex; align-items:center; gap:12px;">
+                    <div class="user-info-text" style="text-align: right; line-height: 1.2;">
+                        <span style="display:block; font-weight:700; color:#1e293b; font-size:0.9rem;">${user.name}</span>
+                        <span style="display:block; font-size:0.75rem; color:#64748b;">${user.carModel || 'Driver'}</span>
+                    </div>
+                    <div class="user-avatar-circle" style="width:40px; height:40px; background:linear-gradient(135deg, #2563eb, #1d4ed8); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; border:2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                </div>`;
+        }
+</script>
+</body>
+</html>

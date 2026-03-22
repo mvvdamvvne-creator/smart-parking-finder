@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Smart Parking Essaouira</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #2563eb;
+            --surface: #ffffff;
+            --bg: #f1f5f9;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --accent: #10b981;
+        }
+
+        body {
+            background-color: var(--bg);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        /* --- Navbar --- */
+        .navbar { background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 0.8rem 0; position: sticky; top: 0; z-index: 50; }
+        .nav-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-weight: 700; font-size: 1.25rem; color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .logo-img { height: 40px; width: auto; }
+
+        .back-link { color: var(--text-sub); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: 0.2s; }
+        .back-link:hover { color: var(--primary); }
+
+        /* --- Layout --- */
+        .main-container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 768px) { .main-container { grid-template-columns: 1fr; } }
+
+        /* --- Identity Card --- */
+        .profile-card {
+            background: var(--surface);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            height: fit-content;
+        }
+
+        .cover-photo { height: 100px; background: linear-gradient(135deg, #2563eb, #4f46e5); }
+        .avatar-wrapper { margin-top: -50px; display: inline-block; position: relative; }
+        .avatar {
+            width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--surface);
+            background-color: #e2e8f0; display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; color: #94a3b8;
+        }
+
+        .user-details { padding: 15px 20px 30px; }
+        .user-details h2 { margin: 10px 0 5px; font-size: 1.25rem; }
+        .user-details p { margin: 0; color: var(--text-sub); font-size: 0.9rem; margin-bottom: 15px; }
+        
+        .stat-row {
+            display: flex; justify-content: space-around;
+            padding: 15px 0; border-top: 1px solid #f1f5f9; margin-top: 15px;
+        }
+        .stat-item h4 { margin: 0; font-size: 1.1rem; color: var(--primary); }
+        .stat-item span { font-size: 0.75rem; color: var(--text-sub); text-transform: uppercase; }
+
+        /* --- Forms --- */
+        .settings-panel { display: flex; flex-direction: column; gap: 20px; }
+        .card { background: var(--surface); border-radius: 16px; padding: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .card-header { margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; }
+        .card-header h3 { margin: 0; font-size: 1.1rem; }
+        .card-header i { color: var(--primary); }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+
+        .input-group { display: flex; flex-direction: column; gap: 6px; }
+        .input-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-sub); }
+        .input-group input {
+            padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px;
+            font-size: 0.95rem; transition: 0.2s;
+        }
+        .input-group input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
+        /* Vehicle Badge */
+        .vehicle-preview {
+            display: flex; align-items: center; gap: 15px; background: #f8fafc;
+            padding: 15px; border-radius: 10px; border: 1px dashed #cbd5e1;
+        }
+        .plate-badge {
+            background: #fbbf24; color: #000; padding: 4px 10px; border-radius: 4px;
+            font-weight: 800; border: 2px solid #000; font-family: monospace; display: inline-block;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: var(--primary); color: white; border: none; padding: 12px 24px;
+            border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.2s;
+        }
+        .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+        .btn-logout {
+            background: #fee2e2; color: #ef4444; border: none; padding: 12px;
+            border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
+        }
+        .btn-logout:hover { background: #fecaca; }
+
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; background: var(--accent);
+            color: white; padding: 12px 24px; border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(100px);
+            transition: 0.3s; opacity: 0; z-index: 1000;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="dashboard.html" class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" style="height: 65px; width: auto;" alt="Smart Parking Logo">
+                Smart Parking
+            </a>
+            <a href="dashboard.html" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Map
+            </a>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <aside class="profile-card">
+            <div class="cover-photo"></div>
+            <div class="avatar-wrapper">
+                <div class="avatar"><i class="fas fa-user"></i></div>
+            </div>
+            
+            <div class="user-details">
+                <h2 id="display-name">Loading...</h2>
+                <p id="display-email">---</p>
+
+                <div class="stat-row">
+                    <div class="stat-item">
+                        <h4 id="stat-parkings">0</h4>
+                        <span>Bookings</span>
+                    </div>
+                    <div class="stat-item">
+                        <h4 id="stat-saved">0 DH</h4>
+                        <span>Saved</span>
+                    </div>
+                </div>
+
+                <button class="btn-logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </button>
+            </div>
+        </aside>
+
+        <main class="settings-panel">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-user-cog"></i>
+                    <h3>Personal Information</h3>
+                </div>
+                <form id="profileForm">
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label>Full Name</label>
+                            <input type="text" id="nameInput" placeholder="Your Name">
+                        </div>
+                        <div class="input-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="phoneInput" placeholder="+212 600-000000">
+                        </div>
+                    </div>
+                    <div class="input-group" style="margin-top: 20px;">
+                        <label>Email Address</label>
+                        <input type="email" id="emailInput" disabled style="background: #f1f5f9; cursor: not-allowed;">
+                    </div>
+                    <button type="submit" class="btn-primary" style="margin-top: 20px;">Save Changes</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-car"></i>
+                    <h3>My Vehicle</h3>
+                </div>
+                
+                <div class="vehicle-preview">
+                    <i class="fas fa-car-side" style="font-size: 2rem; color: var(--text-sub);"></i>
+                    <div>
+                        <div id="display-car" style="font-weight: 600;">No Car Added</div>
+                        <div id="display-plate" class="plate-badge" style="margin-top: 4px;">---</div>
+                    </div>
+                </div>
+
+                <form id="vehicleForm" style="margin-top: 20px;">
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label>Car Model</label>
+                            <input type="text" id="carInput" placeholder="e.g. Dacia Logan">
+                        </div>
+                        <div class="input-group">
+                            <label>License Plate</label>
+                            <input type="text" id="plateInput" placeholder="12345 | أ | 6">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary" style="background: #475569; margin-top: 20px;">Update Vehicle</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast" class="toast"><i class="fas fa-check-circle"></i> Profile Updated!</div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const userJson = localStorage.getItem('currentUser');
+            
+            if (userJson) {
+                const user = JSON.parse(userJson);
+                
+                // Update UI Labels
+                document.getElementById('display-name').innerText = user.name || "Essaouira Driver";
+                document.getElementById('display-email').innerText = user.email;
+                document.getElementById('display-car').innerText = user.carModel || "No Car Added";
+                document.getElementById('display-plate').innerText = user.plate || "---";
+
+                // Update Inputs
+                document.getElementById('nameInput').value = user.name || "";
+                document.getElementById('emailInput').value = user.email || "";
+                document.getElementById('phoneInput').value = user.phone || "";
+                document.getElementById('carInput').value = user.carModel || "";
+                document.getElementById('plateInput').value = user.plate || "";
+
+                // Simulated Stats in DH
+                const bookings = Math.floor(Math.random() * 10) + 3;
+                document.getElementById('stat-parkings').innerText = bookings;
+                document.getElementById('stat-saved').innerText = (bookings * 10) + " DH";
+
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Combined Save Logic
+        function saveData(e) {
+            e.preventDefault();
+            const currentData = JSON.parse(localStorage.getItem('currentUser'));
+            
+            const updatedUser = {
+                ...currentData,
+                name: document.getElementById('nameInput').value,
+                phone: document.getElementById('phoneInput').value,
+                carModel: document.getElementById('carInput').value,
+                plate: document.getElementById('plateInput').value
+            };
+
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            
+            // Live update the display
+            document.getElementById('display-name').innerText = updatedUser.name;
+            document.getElementById('display-car').innerText = updatedUser.carModel || "No Car Added";
+            document.getElementById('display-plate').innerText = updatedUser.plate || "---";
+
+            showToast();
+        }
+
+        document.getElementById('profileForm').onsubmit = saveData;
+        document.getElementById('vehicleForm').onsubmit = saveData;
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

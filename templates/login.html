@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Smart Parking</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="auth-body">
+
+    <div class="container" id="container">
+        
+        <div class="form-container sign-up-container">
+            <form action="#" id="registerForm">
+                <h1>Create Account</h1>
+                <div class="social-container">
+                    <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
+                    <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
+                </div>
+                <span>or use your email for registration</span>
+                
+                <input type="text" id="reg-name" placeholder="Name" required />
+                <input type="email" id="reg-email" placeholder="Email" required />
+                <input type="password" id="reg-password" placeholder="Password" required />
+                <input type="text" id="reg-car" placeholder="Car Model (e.g. Dacia)" />
+                
+                <button type="submit" id="register-btn">Sign Up</button>
+            </form>
+        </div>
+
+        <div class="form-container sign-in-container">
+            <form action="#" id="loginForm"> 
+                <h1>Sign in</h1>
+                <div class="social-container">
+                    <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
+                    <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
+                </div>
+                <span>or use your account</span>
+                
+                <input type="email" id="login-email" placeholder="Email" required />
+                <input type="password" id="login-password" placeholder="Password" required />
+                
+<a href="#" style="margin: 15px 0; color: #333; font-size: 0.9rem; text-decoration: none;">Forgot your password?</a>
+
+<a href="#" onclick="openResetModal(); return false;" style="margin: 15px 0; color: #333; font-size: 0.9rem; text-decoration: none;">Forgot your password?</a>                
+                <button type="submit" id="login-btn">Sign In</button>
+                
+                <p id="error-message" style="color: red; font-size: 0.8rem; margin-top: 10px; display: none;"></p>
+            </form>
+        </div>
+
+        <div class="overlay-container">
+            <div class="overlay">
+                <div class="overlay-panel overlay-left">
+                    <h1>Welcome Back!</h1>
+                    <p>To keep connected with us please login with your personal info</p>
+                    <button class="ghost" id="signIn">Sign In</button>
+                </div>
+                <div class="overlay-panel overlay-right">
+                    <h1>Hello, Driver!</h1>
+                    <p>Enter your personal details and start your journey with us</p>
+                    <button class="ghost" id="signUp">Sign Up</button>
+                </div>
+            </div>
+
+            <div class="parking-car-wrapper">
+                <div class="wind">
+                    <span class="p1"></span><span class="p2"></span><span class="p3"></span>
+                </div>
+                <div class="car-body-container">
+                    <div class="car-top"><div class="window"></div></div>
+                    <div class="car-base"></div>
+                    <div class="light-front"></div>
+                    <div class="light-back"></div>
+                </div>
+                <div class="wheel wheel-left"><div class="hubcap"></div></div>
+                <div class="wheel wheel-right"><div class="hubcap"></div></div>
+                <div class="road-shadow"></div>
+            </div>
+        </div>
+    </div>
+    <div id="resetModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeResetModal()">&times;</span>
+            <h3 style="margin-top: 0; font-family: 'Poppins', sans-serif;">Reset Password</h3>
+            <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">Enter your email address and we'll send you a link to reset your password.</p>
+            
+            <input type="email" id="resetEmail" placeholder="name@example.com" class="auth-input" style="width: 100%; margin-bottom: 15px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-family: 'Inter', sans-serif;">
+            
+            <button onclick="sendResetLink()" style="width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: 0.3s;">Send Reset Link</button>
+            
+            <p id="resetMessage" style="color: #16a34a; font-size: 0.85rem; margin-top: 15px; display: none; font-weight: 600; text-align: center;"><i class="fas fa-check-circle"></i> Reset link sent! Check your inbox.</p>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // --- 0. UI SLIDER ANIMATION LOGIC ---
+    // This makes the panels slide when you click the ghost buttons
+    const signUpButton = document.getElementById('signUp');
+    const signInButton = document.getElementById('signIn');
+    const container = document.getElementById('container');
+
+    if (signUpButton && signInButton && container) {
+        signUpButton.addEventListener('click', () => {
+            container.classList.add("right-panel-active");
+        });
+
+        signInButton.addEventListener('click', () => {
+            container.classList.remove("right-panel-active");
+        });
+    }
+
+    // --- 1. REGISTRATION (SIGN UP) API LOGIC ---
+    const registerBtn = document.getElementById('register-btn'); 
+    if (registerBtn) {
+        registerBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const carModel = document.getElementById('reg-car').value;
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        name: name, 
+                        email: email, 
+                        password: password,
+                        carModel: carModel
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert("Account successfully created! You can now sign in.");
+                    // Slide back to the login panel automatically!
+                    container.classList.remove("right-panel-active");
+                    // Clear the sign up form
+                    document.getElementById('registerForm').reset();
+                } else {
+                    alert(data.message); 
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error connecting to the server.");
+            }
+        });
+    }
+
+    // --- 2. LOGIN (SIGN IN) API LOGIC ---
+    const loginBtn = document.getElementById('login-btn'); 
+    if (loginBtn) {
+        loginBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorMsg = document.getElementById('error-message');
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Save user info for the Dashboard
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    window.location.href = 'dashboard.html';
+                } else {
+                    // Show error text under the button
+                    errorMsg.innerText = data.message;
+                    errorMsg.style.display = 'block';
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                errorMsg.innerText = "Server error. Is Flask running?";
+                errorMsg.style.display = 'block';
+            }
+        });
+    }
+});
+// --- 3. FORGOT PASSWORD MODAL LOGIC ---
+    // (Add this outside the DOMContentLoaded block or make sure it's accessible globally)
+    window.openResetModal = function() {
+        document.getElementById('resetModal').style.display = 'flex';
+    }
+
+    window.closeResetModal = function() {
+        document.getElementById('resetModal').style.display = 'none';
+        document.getElementById('resetMessage').style.display = 'none'; 
+        document.getElementById('resetEmail').value = ''; 
+    }
+
+    window.sendResetLink = function() {
+        const email = document.getElementById('resetEmail').value;
+        
+        if (!email || !email.includes('@')) {
+            alert("Please enter a valid email address.");
+            return;
+        }
+
+        const btn = document.querySelector('.modal-content button');
+        btn.innerText = "Sending...";
+        btn.style.opacity = "0.7";
+
+        // Simulate network request
+        setTimeout(() => {
+            btn.innerText = "Send Reset Link";
+            btn.style.opacity = "1";
+            document.getElementById('resetMessage').style.display = 'block';
+        }, 1500); 
+    }
+</script>
+</body>
+</html>

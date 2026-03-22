@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - Smart Parking Finder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+   <nav class="navbar">
+    <div class="container nav-inner"> 
+        <a href="dashboard.html" class="logo">
+            <img src="logo.png" alt="Logo" class="logo-img">
+            Smart Parking Finder
+        </a>
+
+        <div class="nav-links">
+            <a href="dashboard.html">Home</a>
+            <a href="find-parking.html">Find Parking</a>
+            <a href="reservation.html">My Reservations</a>
+            <a href="about.html">About</a>
+        </div>
+        
+        <div class="nav-actions">
+            <div class="notification-wrapper">
+                <i class="fas fa-bell notification-icon" onclick="toggleNotifications()"></i>
+                <div class="notif-dropdown" id="notificationDropdown">
+                    <div class="notif-header"><h4>Notifications</h4></div>
+                    <div class="notif-item unread">
+                        <div class="notif-icon warn"><i class="fas fa-clock"></i></div>
+                        <div class="notif-text"><p>Reservation expiring</p><span>15 mins remaining</span></div>
+                    </div>
+                    <a href="notification.html" class="notif-footer-link">View All Notifications</a>
+                </div>
+            </div>
+            <a href="login.html" class="btn-signin"><i class="fas fa-user"></i> Sign In</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container notif-page-layout">
+    
+    <div class="notif-main">
+        <div class="page-header">
+            <h2>Notifications</h2>
+            <button class="btn-text">Mark all as read</button>
+        </div>
+
+        <div class="date-divider">Today</div>
+
+        <div class="notif-full-item unread">
+            <div class="notif-icon-large warn"><i class="fas fa-clock"></i></div>
+            <div class="notif-content-full">
+                <div class="notif-top-row">
+                    <h3>Reservation Expiring Soon</h3>
+                    <span class="time">10:45 AM</span>
+                </div>
+                <p>Your parking session at <strong>Central Plaza</strong> expires in 15 minutes. Would you like to extend it?</p>
+                <div class="notif-actions">
+                    <button class="btn-secondary small">Extend Session</button>
+                    <button class="btn-text small">Dismiss</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="notif-full-item">
+            <div class="notif-icon-large success"><i class="fas fa-check-circle"></i></div>
+            <div class="notif-content-full">
+                <div class="notif-top-row">
+                    <h3>Payment Successful</h3>
+                    <span class="time">09:30 AM</span>
+                </div>
+                <p>You have successfully paid <strong>$12.00</strong> for your reservation at Central Plaza.</p>
+            </div>
+        </div>
+
+        <div class="date-divider">Yesterday</div>
+
+        <div class="notif-full-item">
+            <div class="notif-icon-large info"><i class="fas fa-tag"></i></div>
+            <div class="notif-content-full">
+                <div class="notif-top-row">
+                    <h3>50% Off Weekend Parking</h3>
+                    <span class="time">4:00 PM</span>
+                </div>
+                <p>Use code <strong>WEEKEND50</strong> for your next booking at Riverside Mall.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="notif-sidebar">
+        <div class="settings-card">
+            <h3>Preferences</h3>
+            
+            <div class="setting-row">
+                <div class="setting-label">
+                    <span>Push Notifications</span>
+                    <small>Receive popups on device</small>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-label">
+                    <span>Email Alerts</span>
+                    <small>Receipts and reminders</small>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-label">
+                    <span>SMS Updates</span>
+                    <small>Text messages for expirations</small>
+                </div>
+                <label class="switch">
+                    <input type="checkbox">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleNotifications() {
+        document.getElementById('notificationDropdown').classList.toggle('show');
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Parking Finder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+   <nav class="navbar">
+    <div class="container nav-inner"> 
+        <a href="dashboard.html" class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" style="height: 65px; width: auto;" alt="Smart Parking Logo">
+            Smart Parking Finder
+        </a>
+
+        <div class="nav-links">
+            <a href="dashboard.html" class="active">Home</a>
+            <a href="find-parking.html">Find Parking</a>
+            <a href="reservations.html">My Reservations</a>
+            <a href="about.html">About</a>
+        </div>
+        
+     <div class="nav-actions">
+    <div class="notification-wrapper">
+        <i class="fas fa-bell notification-icon" onclick="toggleNotifications()"></i>
+        
+        <div class="notif-dropdown" id="notificationDropdown">
+    <div class="notif-header">
+        <h4>Notifications</h4>
+        <span>Mark all read</span>
+    </div>
+    
+    <div class="notif-item unread" onclick="window.location.href='Notifications.html'">
+        <div class="notif-icon warn"><i class="fas fa-clock"></i></div>
+        <div class="notif-text">
+            <p>Reservation expiring</p>
+            <span>15 mins remaining</span>
+        </div>
+    </div>
+
+    <div class="notif-item" onclick="window.location.href='Notifications.html'">
+        <div class="notif-icon success"><i class="fas fa-check-circle"></i></div>
+        <div class="notif-text">
+            <p>Booking Confirmed</p>
+            <span>Central Plaza • $3.00</span>
+        </div>
+    </div>
+    
+    <a href="notifications.html" class="notif-footer-link">
+        View All Notifications
+    </a>
+</div>
+</div>
+ <a href="login.html" class="btn-signin">
+        <i class="fas fa-user"></i> Sign In
+    </a>
+    </div>
+</nav>
+
+<header class="hero-section">
+    <div class="container"> 
+        <div class="hero-content">
+            <h1>Find Your Perfect Parking Spot</h1>
+            <p>Real-time availability • Easy reservation • Smart navigation</p>
+            
+            <div class="search-box">
+    <div class="input-group">
+        <label>Location</label>
+        <input type="text" id="searchInput" placeholder="Enter destination (e.g. Mall, Plaza)">
+    </div>
+    <div class="input-group">
+        <label>Duration</label>
+        <select>
+            <option>1 hour</option>
+            <option>2 hours</option>
+            <option>Overnight</option>
+        </select>
+    </div>
+    <button class="btn-search" onclick="filterParking()">Search</button>
+</div>
+        </div>
+    </div>
+</header>
+
+<div class="main-layout container"> 
+    
+    <aside class="sidebar">
+        <div class="filter-card">
+            <div class="filter-header">
+                <h3><i class="fas fa-sliders-h"></i> Filters</h3>
+            </div>
+<div class="filter-group">
+    <label class="checkbox-container">
+        <input type="checkbox" id="check-free" onchange="filterParking()"> Free Parking
+    </label>
+    <label class="checkbox-container">
+        <input type="checkbox" id="check-covered" onchange="filterParking()"> Covered Parking
+    </label>
+</div>
+<div class="filter-group">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label>Maximum Distance</label>
+        <span id="distance-val" style="color: #2563eb; font-weight: 700;">2 km</span>
+    </div>
+    <input type="range" id="distance-slider" class="range-slider" min="1" max="20" value="2">
+</div>
+
+<div class="filter-group">
+    <label>Price Range ($/hr)</label>
+    <div class="price-inputs">
+        <input type="number" id="price-min" value="0" min="0">
+        <span class="separator">-</span>
+        <input type="number" id="price-max" value="18" min="0">
+    </div>
+</div>
+
+<button class="btn-apply" id="apply-filters-btn">Apply Filters</button>
+        </div>
+
+        <div class="live-stats">
+            <h4>Live Statistics</h4>
+            <div class="stat-row">
+                <span class="stat-label">Total Parkings</span>
+                <span class="stat-val" id="stat-total">--</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Available Now</span>
+                <span class="stat-val highlight-green" id="stat-available">--</span>
+            </div>
+            <div class="stat-row no-border">
+                <span class="stat-label">Avg. Price/hr</span>
+                <span class="stat-val" id="stat-price">--</span>
+            </div>
+        </div>
+    </aside>
+
+    <main class="content-area">
+        
+<div class="content-header">
+    <h2>Available Spots</h2>
+    <div class="view-toggles">
+        <button class="toggle-btn active" onclick="switchView('list')">List View</button>
+        <button class="toggle-btn" onclick="switchView('map')">Map View</button>
+    </div>
+</div>
+
+        <div id="view-list" style="display: block;">
+            
+            <div class="parking-list" id="parking-list-container">
+                <p style="text-align: center; width: 100%; color: #64748b; padding: 40px;">Loading parkings from database...</p>
+            </div>
+            
+            <div class="load-more-container">
+                <button class="btn-load-more">Load More Parkings</button>
+            </div>
+        </div>
+
+<div id="view-map" style="display: none;">
+    <div id="map" style="height: 600px; width: 100%; border-radius: 12px; z-index: 1;"></div>
+</div>
+
+    </main>
+</div>
+
+<section class="features-section">
+    <h2>Why Choose Smart Parking Finder?</h2>
+    <p>Intelligent parking solutions for modern cities</p>
+    
+    <div class="features-grid">
+        <div class="feature-item">
+            <div class="icon-circle icon-blue"><i class="fas fa-clock"></i></div>
+            <h3>Real-Time Updates</h3>
+            <p>Live availability data updated every 30 seconds</p>
+        </div>
+        <div class="feature-item">
+            <div class="icon-circle icon-green"><i class="fas fa-mobile-alt"></i></div>
+            <h3>Easy Reservation</h3>
+            <p>Book your spot in advance with just a few clicks</p>
+        </div>
+        <div class="feature-item">
+            <div class="icon-circle icon-purple"><i class="fas fa-bell"></i></div>
+            <h3>Smart Notifications</h3>
+            <p>Get alerts when spots become available nearby</p>
+        </div>
+        <div class="feature-item">
+            <div class="icon-circle icon-orange"><i class="fas fa-route"></i></div>
+            <h3>Navigation</h3>
+            <p>Direct navigation to your reserved parking spot</p>
+        </div>
+    </div>
+</section>
+
+<footer class="main-footer">
+    <div class="footer-content">
+        <div class="footer-col">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <div style="background: #2563eb; color: white; width: 30px; height: 30px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-weight: bold;">P</div>
+                <h4 style="margin: 0; font-size: 1.5rem;">Smart Parking</h4>
+            </div>
+            <p>Making urban parking smarter, easier, and more efficient for everyone.</p>
+        </div>
+        <div class="footer-col">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="#">Find Parking</a></li>
+                <li><a href="#">How It Works</a></li>
+                <li><a href="#">Pricing</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Support</h4>
+            <ul>
+                <li><a href="#">Help Center</a></li>
+                <li><a href="#">Contact Us</a></li>
+                <li><a href="#">Terms of Service</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Connect With Us</h4>
+            <div style="display: flex; gap: 15px;">
+                <a href="#" style="font-size: 1.5rem;"><i class="fab fa-facebook"></i></a>
+                <a href="#" style="font-size: 1.5rem;"><i class="fab fa-twitter"></i></a>
+                <a href="#" style="font-size: 1.5rem;"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+<p>&copy; <span id="current-year"></span> Smart Parking Finder. All rights reserved.</p>
+
+<script>
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+</script>    </div>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+    // 1. CHECK LOGIN
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (!user) window.location.href = 'login.html';
+
+    // 2. THE SEARCH ENGINE
+    function filterParking() {
+        let input = document.getElementById('searchInput').value.toLowerCase();
+        let wantFree = document.getElementById('check-free')?.checked;
+        let wantCovered = document.getElementById('check-covered')?.checked;
+        
+        let cards = document.querySelectorAll('.parking-card');
+
+        cards.forEach(card => {
+            let text = card.innerText.toLowerCase();
+            let priceText = card.querySelector('.val-price')?.innerText || "$0";
+            let featuresText = card.querySelector('.features-row')?.innerText.toLowerCase() || "";
+            
+            let matchesSearch = text.includes(input);
+            let matchesFilters = true;
+            
+            if (wantFree && priceText.includes('$') && !priceText.toLowerCase().includes('free')) {
+                matchesFilters = false;
+            }
+            if (wantCovered && !featuresText.includes('covered')) {
+                matchesFilters = false;
+            }
+
+            if (matchesSearch && matchesFilters) {
+                card.style.display = "flex"; 
+                card.style.opacity = "0";
+                setTimeout(() => card.style.opacity = "1", 50);
+            } else {
+                card.style.display = "none";
+            }
+        });
+    }
+
+    // 3. THE VIEW TOGGLE LOGIC (Map vs List)
+    let dashboardMap = null;
+
+    function switchView(viewType) {
+        const listDiv = document.getElementById('view-list');
+        const mapDiv = document.getElementById('view-map');
+        const btns = document.querySelectorAll('.toggle-btn');
+
+        if (viewType === 'list') {
+            listDiv.style.display = 'block';
+            mapDiv.style.display = 'none';
+            btns[0].classList.add('active');
+            btns[1].classList.remove('active');
+        } else if (viewType === 'map') {
+            listDiv.style.display = 'none';
+            mapDiv.style.display = 'block';
+            btns[0].classList.remove('active');
+            btns[1].classList.add('active');
+
+            if (!dashboardMap) {
+                dashboardMap = L.map('map').setView([31.5125, -9.7667], 14);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap'
+                }).addTo(dashboardMap);
+
+                // Pour l'instant on garde ces marqueurs, on les rendra dynamiques plus tard !
+                L.marker([31.5118, -9.7715]).addTo(dashboardMap).bindPopup("<b>Port Parking</b><br>20 DH");
+                L.marker([31.5135, -9.7645]).addTo(dashboardMap).bindPopup("<b>Bab Marrakech Lot</b><br>10 DH");
+                L.marker([31.5035, -9.7625]).addTo(dashboardMap).bindPopup("<b>Beach Side Parking</b><br>Free");
+            }
+
+            setTimeout(() => { dashboardMap.invalidateSize(); }, 100);
+        }
+    }
+
+    // 4. ON PAGE LOAD
+    document.addEventListener('DOMContentLoaded', async function() {
+        
+        // A. Profile Injection
+        const authArea = document.querySelector('.nav-actions');
+        if (user && authArea) {
+            authArea.innerHTML = `
+                <i class="fa-regular fa-bell notification-icon" style="font-size: 1.3rem; color: #64748b; margin-right: 15px; cursor: pointer;"></i>
+                <div class="user-profile-nav" style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="window.location.href='profile.html'">
+                    <span style="font-weight: 700; color: #1e293b;">${user.name || 'MOhamed'}</span>
+                    <div style="width: 40px; height: 40px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                </div>
+            `;
+        }
+
+        // B. FETCH PARKINGS FROM FLASK API
+        const parkingContainer = document.getElementById('parking-list-container');
+        
+        try {
+            const response = await fetch('/api/parkings');
+            const data = await response.json();
+
+            if (data.success && data.parkings.length > 0) {
+                parkingContainer.innerHTML = ''; // Clear loading text
+                
+                let totalSpots = 0;
+                let totalAvail = 0;
+                let totalPrice = 0;
+
+                data.parkings.forEach(p => {
+                    // Update stats
+                    totalSpots += p.places_totales;
+                    totalAvail += p.places_dispo;
+                    totalPrice += parseFloat(p.tarif);
+
+                    // Determine CSS classes for badges
+                    let statusClass = 'available';
+                    let statusText = 'Available';
+                    let availClass = 'val-available';
+                    
+                    if (p.places_dispo === 0) {
+                        statusClass = 'limited'; 
+                        statusText = 'Full';
+                        availClass = 'val-available warn';
+                    } else if (p.places_dispo < 10) {
+                        statusClass = 'limited';
+                        statusText = 'Limited';
+                        availClass = 'val-available warn';
+                    }
+
+                    // Price HTML
+                    let priceHTML = p.est_gratuit ? 
+                        `<span class="val-price free" style="color:#10b981; font-weight:800;">FREE</span><small>all day</small>` : 
+                        `<span class="val-price">$${p.tarif}</span><small>per hour</small>`;
+
+                    // Features Tags HTML
+                    let featuresHTML = '';
+                    if (p.est_couvert) featuresHTML += `<span class="tag tag-blue"><i class="fas fa-shield-alt"></i> Covered</span> `;
+                    if (p.est_gratuit) featuresHTML += `<span class="tag tag-green"><i class="fas fa-gift"></i> Free</span> `;
+                    if (!p.est_couvert && !p.est_gratuit) featuresHTML += `<span class="tag tag-purple"><i class="fas fa-car"></i> Standard</span>`;
+
+                    // Unsplash fallback image (can change later)
+                    let imgUrl = "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=800&q=80";
+
+                    // Build Card
+                    const cardHTML = `
+                    <div class="parking-card">
+                        <div class="card-image-wrapper">
+                            <img src="${imgUrl}" alt="Parking">
+                            <span class="badge badge-dist">${(Math.random() * 2 + 0.1).toFixed(1)} km away</span>
+                            <span class="badge badge-status ${statusClass}"><i class="fas fa-circle"></i> ${statusText}</span>
+                        </div>
+                        <div class="card-content">
+                            <h3>${p.nom}</h3>
+                            <p class="address"><i class="fas fa-map-marker-alt"></i> ${p.adresse}</p>
+                            <div class="card-stats-row">
+                                <div class="stat-group">
+                                    <span class="${availClass}">${p.places_dispo}</span>
+                                    <span class="val-total">${p.places_totales}</span>
+                                    <div class="stat-labels"><small>Available</small> <small>Total</small></div>
+                                </div>
+                                <div class="price-group">
+                                    ${priceHTML}
+                                </div>
+                            </div>
+                            <div class="features-row">
+                                ${featuresHTML}
+                            </div>
+                            <button class="btn-reserve" data-id="${p.id}"><i class="far fa-calendar-alt"></i> Reserve Now</button>
+                        </div>
+                    </div>`;
+                    
+                    parkingContainer.innerHTML += cardHTML;
+                });
+
+                // Update the Sidebar Live Stats!
+                document.getElementById('stat-total').innerText = data.parkings.length;
+                document.getElementById('stat-available').innerText = totalAvail;
+                document.getElementById('stat-price').innerText = "$" + (totalPrice / data.parkings.length).toFixed(2);
+
+            } else {
+                parkingContainer.innerHTML = '<p style="text-align:center; width:100%;">No parkings found in the database. Please add some via phpMyAdmin!</p>';
+            }
+        } catch (error) {
+            console.error("Error fetching parkings:", error);
+            parkingContainer.innerHTML = '<p style="text-align:center; color:red; width:100%;">Error connecting to Flask server to get parkings.</p>';
+        }
+
+        // C. BOOKING FUNCTION (Using Event Delegation so it works on dynamic cards)
+        document.getElementById('parking-list-container').addEventListener('click', function(e) {
+            const btn = e.target.closest('.btn-reserve');
+            if (btn) {
+                e.preventDefault();
+                const card = btn.closest('.parking-card');
+                const spotName = card.querySelector('h3').innerText;
+                const priceElement = card.querySelector('.val-price');
+                const price = priceElement ? priceElement.innerText : "Free";
+
+                const newBooking = {
+                    spotName: spotName,
+                    price: price,
+                    date: new Date().toLocaleDateString(),
+                    time: new Date().toLocaleTimeString(),
+                    status: "Active"
+                };
+
+                localStorage.setItem('currentBooking', JSON.stringify(newBooking));
+                window.location.href = 'reservation.html';
+            }
+        });
+    });
+
+    // --- 5. SIDEBAR LOGIC ---
+    const distanceSlider = document.getElementById('distance-slider');
+    const distanceVal = document.getElementById('distance-val');
+
+    if (distanceSlider && distanceVal) {
+        distanceSlider.addEventListener('input', function() {
+            distanceVal.innerText = this.value + ' km';
+        });
+    }
+
+    const applyBtn = document.getElementById('apply-filters-btn');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', function() {
+            const originalText = this.innerText;
+            this.innerText = "Applying...";
+            this.style.opacity = "0.8";
+
+            setTimeout(() => {
+                this.innerText = originalText;
+                this.style.opacity = "1";
+                if (typeof filterParking === "function") {
+                    filterParking(); 
+                }
+            }, 400); 
+        });
+    }
+</script>
+</body>
+</html>

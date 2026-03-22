@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Parking - Essaouira</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> 
+   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        #split-map { width: 100%; height: 100%; z-index: 1; }
+        .no-scroll { overflow: hidden; height: 100vh; }
+    </style>
+</head>
+<body class="no-scroll">
+<nav class="navbar">
+    <div class="container">
+        <div class="nav-inner">
+            <a href="dashboard.html" class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" style="height: 65px; width: auto;" alt="Smart Parking Logo">
+                Smart Parking
+            </a>
+            <div class="nav-links">
+                <a href="dashboard.html">Home</a>
+                <a href="find-parking.html" class="active">Find Parking</a>
+                <a href="reservation.html">My Reservations</a>
+                <a href="about.html">About</a>
+            </div>
+            <div class="nav-actions" id="nav-profile-area">
+                </div>
+        </div>
+    </div>
+</nav>
+    <div class="search-header-strip">
+        <div class="container">
+            <div class="search-strip-inner">
+                <div class="search-input-group">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="mapSearch" placeholder="Search near Medina, Port, or Beach...">
+                </div>
+                <button class="btn-search-strip">Search Essaouira</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="split-view-container">
+        
+        <div class="panel-list">
+            <div class="panel-header">
+                <h3>Available in Essaouira</h3>
+            </div>
+
+            <div class="parking-card horizontal-card" onclick="focusSpot([31.5118, -9.7715])">
+                <div class="card-image-wrapper">
+                    <img src="https://images.unsplash.com/photo-1590674899484-13da0d1b58f5?w=400" alt="Essaouira Port">
+                    <div class="badge badge-status available">Available</div>
+                </div>
+                <div class="card-content">
+                    <div class="card-top"><h3>Port Parking</h3><span class="price-tag">20 DH</span></div>
+                    <div class="address">Boulevard Mohammed V, Port Area</div>
+                    <button class="btn-reserve small" onclick="window.location.href='reservation.html'">Reserve</button>
+                </div>
+            </div>
+
+            <div class="parking-card horizontal-card" onclick="focusSpot([31.5135, -9.7645])">
+                <div class="card-image-wrapper">
+                    <img src="https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=400" alt="Bab Marrakech">
+                    <div class="badge badge-status limited">Limited</div>
+                </div>
+                <div class="card-content">
+                    <div class="card-top"><h3>Bab Marrakech Lot</h3><span class="price-tag">10 DH</span></div>
+                    <div class="address">Avenue 2 Mars, Medina Entrance</div>
+                    <button class="btn-reserve small">Reserve</button>
+                </div>
+            </div>
+
+            <div class="parking-card horizontal-card" onclick="focusSpot([31.5035, -9.7625])">
+                <div class="card-image-wrapper">
+                    <img src="https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?w=400" alt="Beach Parking">
+                    <div class="badge badge-status free">Free</div>
+                </div>
+                <div class="card-content">
+                    <div class="card-top"><h3>Beach Side Parking</h3><span class="price-tag free">FREE</span></div>
+                    <div class="address">Corniche Essaouira</div>
+                    <button class="btn-reserve small">Reserve</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-map">
+            <div id="split-map"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // 1. Initialize Map on Morocco (we'll zoom in once data loads)
+        var map = L.map('split-map').setView([31.7917, -7.0926], 6); // Centered on Morocco
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        var markerLayer = {}; // Store markers for easy access
+        var allParkings = []; // Store raw data for searching
+
+        // 2. Fetch Live Data from the Database
+        async function loadParkings() {
+            try {
+                const response = await fetch('/api/parkings');
+                const data = await response.json();
+
+                if (data.success) {
+                    allParkings = data.parkings;
+                    renderCards(allParkings);
+                    renderMarkers(allParkings);
+                    
+                    // Optional: If you want the map to automatically zoom to the first parking found
+                    if(allParkings.length > 0) {
+                        map.setView([allParkings[0].latitude, allParkings[0].longitude], 13);
+                    }
+                } else {
+                    console.error("Failed to load parkings:", data.message);
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        // 3. Render the HTML Cards Dynamically
+        function renderCards(parkings) {
+            // Find the container where cards live, but skip the header
+            const panelList = document.querySelector('.panel-list');
+            
+            // Clear existing static cards (keep the header)
+            panelList.innerHTML = `
+                <div class="panel-header">
+                    <h3>Available Parkings</h3>
+                </div>
+            `;
+
+            parkings.forEach(parking => {
+                // Determine image source (Base64 from DB or default)
+                const imageSource = parking.photo 
+                    ? `data:image/jpeg;base64,${parking.photo}` 
+                    : 'static/images/default_parking.jpg'; // Make sure you have a default image here!
+
+                // Determine badge and price display
+                const badgeClass = parking.places_dispo > 10 ? 'available' : (parking.places_dispo > 0 ? 'limited' : 'full');
+                const badgeText = parking.places_dispo > 10 ? 'Available' : (parking.places_dispo > 0 ? 'Limited' : 'Full');
+                
+                const priceClass = parking.est_gratuit ? 'free' : '';
+                const priceText = parking.est_gratuit ? 'FREE' : `${parking.tarif} DH`;
+
+                const cardHTML = `
+                    <div class="parking-card horizontal-card" onclick="focusSpot([${parking.latitude}, ${parking.longitude}], ${parking.id})">
+                        <div class="card-image-wrapper">
+                            <img src="${imageSource}" alt="${parking.nom}" onerror="this.src='https://images.unsplash.com/photo-1590674899484-13da0d1b58f5?w=400'">
+                            <div class="badge badge-status ${badgeClass}">${badgeText}</div>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-top"><h3>${parking.nom}</h3><span class="price-tag ${priceClass}">${priceText}</span></div>
+                            <div class="address">${parking.adresse || 'Address not available'}</div>
+                            <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">Spots: ${parking.places_dispo} / ${parking.places_totales}</p>
+                            <button class="btn-reserve small" onclick="event.stopPropagation(); window.location.href='reservation.html?id=${parking.id}'">Reserve</button>
+                        </div>
+                    </div>
+                `;
+                panelList.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        }
+
+        // 4. Render Markers on the Map
+        function renderMarkers(parkings) {
+            // Clear existing markers if we are re-rendering
+            for (let key in markerLayer) {
+                map.removeLayer(markerLayer[key]);
+            }
+            markerLayer = {};
+
+            parkings.forEach(parking => {
+                if(parking.latitude && parking.longitude) {
+                    var marker = L.marker([parking.latitude, parking.longitude]).addTo(map)
+                        .bindPopup(`<b>${parking.nom}</b><br>Spots: ${parking.places_dispo}`);
+                    markerLayer[parking.id] = marker;
+                }
+            });
+        }
+
+        // 5. Search Functionality
+        function executeSearch() {
+            const query = document.getElementById('mapSearch').value.toLowerCase();
+            
+            // Filter our raw data array
+            const filteredParkings = allParkings.filter(parking => 
+                parking.nom.toLowerCase().includes(query) || 
+                (parking.adresse && parking.adresse.toLowerCase().includes(query))
+            );
+
+            // Re-render only the matched cards and markers
+            renderCards(filteredParkings);
+            renderMarkers(filteredParkings);
+
+            // If we found a match, zoom map to the first result
+            if (filteredParkings.length > 0) {
+                map.flyTo([filteredParkings[0].latitude, filteredParkings[0].longitude], 14);
+            }
+        }
+
+        // Listen for "Enter" key or Button Click
+        document.getElementById('mapSearch').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                executeSearch();
+            }
+        });
+        document.querySelector('.btn-search-strip').onclick = executeSearch;
+
+        // Function for clicking cards manually
+        function focusSpot(coords, id) {
+            map.flyTo(coords, 16);
+            if(markerLayer[id]) {
+                markerLayer[id].openPopup();
+            }
+        }
+
+        // --- AUTHENTICATION HEADER ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load the parking data right away!
+            loadParkings();
+
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            const authArea = document.getElementById('nav-profile-area');
+
+            if (user && authArea) {
+                authArea.innerHTML = `
+                    <i class="fa-regular fa-bell notification-icon"></i>
+                    <div class="user-nav-wrapper" onclick="window.location.href='profile.html'" style="cursor:pointer; display:flex; align-items:center; gap:12px;">
+                        <div class="user-info-text" style="text-align: right; line-height: 1.2;">
+                            <span style="display:block; font-weight:700; color:#1e293b; font-size:0.9rem;">${user.name}</span>
+                            <span style="display:block; font-size:0.75rem; color:#64748b;">${user.carModel || 'Driver'}</span>
+                        </div>
+                        <div class="user-avatar-circle" style="width:40px; height:40px; background:linear-gradient(135deg, #2563eb, #1d4ed8); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; border:2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                    </div>`;
+            }
+        });
+    </script>
+</body>
+</html>

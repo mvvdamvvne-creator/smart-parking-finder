@@ -1,0 +1,55 @@
+🚀 Smart Parking Finder - Project Status Report
+1. Tech Stack:
+
+Backend: Python (Flask)
+
+Database: MySQL (smart_parking_db)
+
+Frontend: HTML, CSS, Vanilla JavaScript, Leaflet (Maps)
+
+2. Database Structure (MySQL):
+
+utilisateurs table: Stores user accounts (name, email, password, car model).
+
+parkings table: Stores parking spots (name, address, latitude, longitude, total spots, available spots, price, covered status, free status).
+
+3. Features Completed:
+
+Flask Server Setup: Created app.py as the main engine to route pages and serve static files (CSS, Images) properly using url_for.
+
+User Authentication: * Built dynamic Sign In & Sign Up forms with smooth sliding CSS animations.
+
+Created /api/register and /api/login endpoints to verify users and create accounts in MySQL.
+
+Added JavaScript to save the logged-in user to the browser (localStorage) to display their name in the dashboard.
+
+Dynamic Dashboard:
+
+Created the /api/parkings route to fetch live parking data from the database.
+
+Implemented a crucial fix to convert MySQL Decimal values into standard Python floats to avoid JSON crashes.
+
+Replaced hardcoded HTML cards with dynamic JavaScript that automatically loops through the database results and generates parking cards.
+
+Connected the live database numbers to the sidebar statistics (Total Parkings, Available Now, Average Price).
+
+4. What's Next on the To-Do List?
+
+Making the Leaflet Map markers dynamic (so they pull coordinates directly from the database instead of being hardcoded).
+
+Activating the "Reserve Now" buttons to create actual bookings.
+
+Connecting the sidebar filters (Distance, Free/Covered, Price) to filter the live data.
+
+Whenever you come back, just paste this report to me or remind me what we are working on, and we will pick right up where we left off!
+
+
+
+
+sql to randomise the data of every parking lot cuz the api only gave us the coordinates and not the price or places availble :
+UPDATE parkings 
+SET 
+    places_totales = FLOOR(RAND() * 150) + 50,  -- Random number between 50 and 200
+    places_dispo = FLOOR(RAND() * 40),          -- Random number between 0 and 40
+    tarif = FLOOR(RAND() * 15) + 5,             -- Random price between 5 and 20 DH
+    est_couvert = IF(RAND() > 0.5, TRUE, FALSE); -- 50% chance of being covered
